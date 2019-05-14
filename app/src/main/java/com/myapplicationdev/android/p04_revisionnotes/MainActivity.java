@@ -10,6 +10,8 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity {
     Button btnInsert, btnShow;
     EditText etNote;
@@ -29,18 +31,30 @@ public class MainActivity extends AppCompatActivity {
                 RadioGroup rg = findViewById(R.id.radioGroupStars);
                 int selectedButtonId = rg.getCheckedRadioButtonId();
                 RadioButton rb = findViewById(selectedButtonId);
+                Boolean exist = false;
 
                 if (etNote.getText().toString().equalsIgnoreCase("")){
                     Toast.makeText(MainActivity.this, "Please enter a note", Toast.LENGTH_LONG).show();
                 }else {
                     DBHelper db = new DBHelper(MainActivity.this);
-
-                    db.insertNote(etNote.getText().toString(), Integer.parseInt(rb.getText().toString()));
+                    ArrayList<Note> notes = db.getAllNotes();
+                    if (notes.size() != 0) {
+                        for (int i = 0; i < notes.size(); i++) {
+                            Note currentNote = notes.get(i);
+                            if (currentNote.getNoteContent().equalsIgnoreCase(etNote.getText().toString())) {
+                                Toast.makeText(MainActivity.this, "This note already exist", Toast.LENGTH_LONG).show();
+                                exist = true;
+                            }
+                        }
+                    }
+                    if (exist==false) {
+                        db.insertNote(etNote.getText().toString(), Integer.parseInt(rb.getText().toString()));
+                        Toast.makeText(MainActivity.this, "Inserted", Toast.LENGTH_SHORT).show();
+                        etNote.setText("");
+                        rg.clearCheck();
+                        rg.check(R.id.radio1);
+                    }
                     db.close();
-                    Toast.makeText(MainActivity.this, "Inserted", Toast.LENGTH_SHORT).show();
-                    etNote.setText("");
-                    rg.clearCheck();
-                    rg.check(R.id.radio1);
                 }
             }
         });
